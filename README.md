@@ -8,11 +8,11 @@ BlueVault Finance is a microservices-based financial application designed and de
 
 Each feature of the BlueVault Finance platform is built as an independent microservice (frontend + backend):
 
-| Feature              | Frontend Repo                           | Backend Repo                           |
-|---------------------|------------------------------------------|----------------------------------------|
+| Feature              | Frontend Repo                            | Backend Repo                           |
+|----------------------|------------------------------------------|----------------------------------------|
+| Home Page          | [homeloan-fe](https://github.com/Surajmukhede/bluevault-home)
 | SIP Calculator       | [sip-fe](https://github.com/Surajmukhede/bluevault-sip-fe)      | [sip-be](https://github.com/Surajmukhede/bluevault-sip-be)   |
-| EMI Calculator       | [emi-fe](https://github.com/Surajmukhede/bluevault-emi-fe)      | [emi-be](https://github.com/Surajmukhede/bluevault-emi-be)      |
-| Home Page            | [homeloan-fe](https://github.com/Surajmukhede/bluevault-home)
+| EMI Calculator       | [emi-fe](https://github.com/Surajmukhede/bluevault-emi-fe)      | [emi-be](https://github.com/Surajmukhede/bluevault-emi-be)   |
 | Loan Form            | [loan-form-fe](https://github.com/Surajmukhede/bluevault-loan-fe) | [loan-form-be](https://github.com/Surajmukhede/bluevault-loan-be)
 
 Each microservice has:
@@ -76,13 +76,13 @@ Each microservice has its own Jenkins pipeline triggered via GitHub webhook:
 ---
 🔗 Useful Links
 
-    No-IP Setup Guide
+    [No-IP Setup Guide](https://www.noip.com/support/knowledgebase/free-dynamic-dns-getting-started-guide-ip-version)
 
-    Kubeadm Docs
+    [Kubeadm Docs](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/)
 
-    Terraform Docs
+    [Terraform Docs](https://developer.hashicorp.com/terraform/docs)
 
-    Ansible Playbooks
+    [Ansible Playbooks](https://docs.ansible.com/ansible/latest/collections/amazon/aws/index.html)
 ---
 🙋 About Me
 
