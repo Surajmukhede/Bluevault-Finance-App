@@ -1,0 +1,45 @@
+---
+- name: Initialize Kubernetes Control Plane with kubeadm
+  hosts: all
+  become: true
+
+  vars:
+    cri_socket: "unix:///var/run/crio/crio.sock"
+    pod_network_cidr: "192.168.0.0/16"
+    kubeconfig_path: "/home/ubuntu/.kube/config"
+
+  tasks:
+
+    - name: Pull required kubeadm images
+      command: kubeadm config images pull --cri-socket={{ cri_socket }}
+
+    - name: Initialize the Kubernetes cluster
+      command: kubeadm init --pod-network-cidr={{ pod_network_cidr }} --cri-socket={{ cri_socket }}
+      register: kubeadm_output
+      args:
+        creates: /etc/kubernetes/admin.conf
+
+    - name: Create .kube directory
+      file:
+        path: /home/ubuntu/.kube
+        state: directory
+        mode: '0755'
+        owner: ubuntu
+        group: ubuntu
+
+    - name: Copy admin.conf to user's kube config
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: "{{ kubeconfig_path }}"
+        remote_src: yes
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+
+    - name: Apply Calico CNI
+      shell: |
+        kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      become: true
+      become_user: ubuntu
