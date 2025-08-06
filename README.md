@@ -76,13 +76,14 @@ Each microservice has its own Jenkins pipeline triggered via GitHub webhook:
 ---
 🔗 Useful Links
 
-    [No-IP Setup Guide](https://www.noip.com/support/knowledgebase/free-dynamic-dns-getting-started-guide-ip-version)
+[No-IP Setup Guide](https://www.noip.com/support/knowledgebase/free-dynamic-dns-getting-started-guide-ip-version)
 
-    [Kubeadm Docs](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/)
+[Kubeadm Docs](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/)
 
-    [Terraform Docs](https://developer.hashicorp.com/terraform/docs)
+[Terraform Docs](https://developer.hashicorp.com/terraform/docs)
 
-    [Ansible Playbooks](https://docs.ansible.com/ansible/latest/collections/amazon/aws/index.html)
+[Ansible Playbooks](https://docs.ansible.com/ansible/latest/collections/amazon/aws/index.html)
+
 ---
 🙋 About Me
 
