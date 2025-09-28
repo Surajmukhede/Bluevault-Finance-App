@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loan-form-be
+  labels:
+    app: python-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: python-backend
+  template:
+    metadata:
+      labels:
+        app: python-backend
+    spec:
+      containers:
+        - name: loan-backend
+          image: alamshkh1/bluevault-loan-form-be:v5 # Replace with your Docker Hub username
+          ports:
+            - containerPort: 5000
+          env: # <--- STATICALLY TYPED ENVIRONMENT VARIABLES
+            - name: MYSQL_HOST
+              value: mysql-db # Kubernetes service name for MySQL
+            - name: MYSQL_USER
+              value: root # <--- STATICALLY TYPED USER
+            - name: MYSQL_PASSWORD
+              value: admin123 # <--- STATICALLY TYPED PASSWORD
+            - name: MYSQL_DATABASE
+              value: bluevault_db
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loan-backend
+  labels:
+    app: python-backend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5000
+      targetPort: 5000
+  selector:
+    app: python-backend

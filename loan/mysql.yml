@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loan-form-db
+  labels:
+    app: mysql-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-db
+  template:
+    metadata:
+      labels:
+        app: mysql-db
+    spec:
+      containers:
+        - name: mysql
+          image: alamshkh1/bluevault-loan-form-db:v5 # Remember to build and push this image
+          env: # <--- STATICALLY TYPED ENVIRONMENT VARIABLES
+            - name: MYSQL_ROOT_PASSWORD
+              value: admin123 # <--- STATICALLY TYPED PASSWORD
+            - name: MYSQL_DATABASE
+              value: bluevault_db
+          ports:
+            - containerPort: 3306
+          # Removed volumeMounts for persistent storage
+          livenessProbe:
+            tcpSocket:
+              port: 3306
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          readinessProbe:
+            tcpSocket:
+              port: 3306
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+      # Removed volumes section for persistent storage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-db
+  labels:
+    app: mysql-db
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+  selector:
+    app: mysql-db
+  clusterIP: None
+# Removed PersistentVolumeClaim definition
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: mysql-pv-claim
+#   labels:
+#     app: mysql-db
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 5Gi

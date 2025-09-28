@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loan-form-fe
+  labels:
+    app: loan-frontend
+spec:
+  replicas: 1 # Only one pod as requested
+  selector:
+    matchLabels:
+      app: loan-frontend
+  template:
+    metadata:
+      labels:
+        app: loan-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: alamshkh1/bluevault-loan-form-fe:v5 # Replace with your Docker Hub username
+          ports:
+            - containerPort: 80
+          # Removed volumeMounts and volumes sections related to ConfigMap
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+      # Removed volumes section
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loan-frontend # This service will be exposed to the internet
+  labels:
+    app: loan-frontend
+spec:
+  type: NodePort # Or LoadBalancer for cloud providers
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30084 # Choose a unique port in the range 30000-32767
+  selector:
+    app: loan-frontend

@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: home-frontend-deployment
+  labels:
+    app: home-frontend
+spec:
+  replicas: 1 # As requested, one single pod
+  selector:
+    matchLabels:
+      app: home-frontend
+  template:
+    metadata:
+      labels:
+        app: home-frontend
+    spec:
+      containers:
+        - name: home-frontend
+          image: alamshkh1/bluevault-home:v2 # Your Docker Hub image
+          ports:
+            - containerPort: 80 # Nginx listens on port 80
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: home-frontend # <--- Service name changed to home-frontend
+  labels:
+    app: home-frontend
+spec:
+  selector:
+    app: home-frontend # This selects the pods created by the deployment above
+  type: NodePort # Exposes the service on a port on each Node's IP
+  ports:
+    - protocol: TCP
+      port: 80 # The port the service exposes (internal to cluster)
+      targetPort: 80 # The port the container is listening on (Nginx's port)
+      nodePort: 30081 # A specific port on your Kubernetes Node(s) to access the service externally. Must be in range 30000-32767.

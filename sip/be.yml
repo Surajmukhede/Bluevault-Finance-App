@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sip-be
+  labels:
+    app: sip-backend
+spec:
+  replicas: 1 # You can increase this for higher availability
+  selector:
+    matchLabels:
+      app: sip-backend
+  template:
+    metadata:
+      labels:
+        app: sip-backend
+    spec:
+      containers:
+      - name: sip-backend
+        image: alamshkh1/bluevault-sip-be:v4 # Replace with your Docker Hub username and tag
+        ports:
+        - containerPort: 5000
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: sip-backend # This name is crucial! It must match the proxy_pass in Nginx config
+  labels:
+    app: sip-backend
+spec:
+  selector:
+    app: sip-backend # Selects pods with this label
+  ports:
+    - protocol: TCP
+      port: 5000 # The port the service exposes
+      targetPort: 5000 # The port the container is listening on
+  type: ClusterIP # Default type, makes it only accessible within the cluster

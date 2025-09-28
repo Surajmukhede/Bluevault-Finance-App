@@ -1,0 +1,56 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bluevault-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: www.bluevault.live
+    http:
+      paths:
+      # Home frontend
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: home-frontend
+            port:
+              number: 80
+
+      # SIP calculator
+      - path: /sip-calc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:  
+          service:
+            name: sip-frontend-service
+            port:
+              number: 80
+
+      # EMI calculator
+      - path: /emi-calc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: emi-calc
+            port:
+              number: 80
+
+      # Loan form frontend
+      - path: /loan-form(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: loan-frontend
+            port:
+              number: 80
+
+      # Loan form backend API
+      - path: /loan-form/submit-loan
+        pathType: Prefix
+        backend:
+          service:
+            name: loan-backend
+            port:
+              number: 5000

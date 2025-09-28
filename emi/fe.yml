@@ -1,0 +1,48 @@
+# home-loan-calculator/k8s-manifests/loan-frontend-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: emi-frontend-deployment
+  labels:
+    app: emi-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: emi-frontend
+  template:
+    metadata:
+      labels:
+        app: emi-frontend
+    spec:
+      containers:
+      - name: emi-frontend
+        image: alamshkh1/bluevault-emi-fe:v4 # Build from home-loan-calculator/frontend/Dockerfile
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+
+---
+
+# home-loan-calculator/k8s-manifests/loan-frontend-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: emi-calc
+  labels:
+    app: emi-frontend
+spec:
+  selector:
+    app: emi-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30083 # Unique NodePort for Home Loan Calculator frontend
+  type: NodePort

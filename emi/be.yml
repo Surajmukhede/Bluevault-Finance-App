@@ -1,0 +1,47 @@
+# home-loan-calculator/k8s-manifests/loan-backend-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: emi-backend-deployment
+  labels:
+    app: loan-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loan-backend
+  template:
+    metadata:
+      labels:
+        app: loan-backend
+    spec:
+      containers:
+      - name: emi-backend
+        image: alamshkh1/bluevault-emi-be:v4 # Build from home-loan-calculator/backend/Dockerfile
+        ports:
+        - containerPort: 5000
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+
+---
+
+# home-loan-calculator/k8s-manifests/loan-backend-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: emi-calc-be # This name must match the proxy_pass in frontend Nginx
+  labels:
+    app: loan-backend
+spec:
+  selector:
+    app: loan-backend
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+  type: ClusterIP

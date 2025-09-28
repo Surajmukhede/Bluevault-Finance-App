@@ -1,0 +1,162 @@
+
+## Installing Jenkins
+  sudo hostnamectl set-hostname auto
+  sudo yum update
+  sudo dnf install java-17-amazon-corretto -y
+  sudo yum install wget -y
+  sudo wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo
+  sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+  sudo dnf install jenkins -y
+  sudo yum install epel-release -y
+  sudo yum install git -y
+  sudo systemctl start jenkins
+  sudo systemctl enable jenkins
+
+## Installing Docker
+sudo yum update
+sudo yum install -y docker
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo usermod -aG docker ec2-user
+sudo usermod -aG docker jenkins 
+
+
+## Installing Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep 'tag_name' | cut -d '"' -f 4)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+docker-compose --version
+
+
+##Installing eksctl on AmzLinux2023
+curl --silent --location "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_Linux_amd64.tar.gz" | tar xz -C /tmp
+sudo mv /tmp/eksctl /usr/local/bin
+eksctl version
+
+
+##Installing kubectl on AmzLinux2023
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x ./kubectl
+sudo mv ./kubectl /usr/local/bin/kubectl
+kubectl version --client
+
+aws configure
+aws eks --region  us-west-2 update-kubeconfig --name cluster1
+
+
+
+## copies kube config to Jenkins directory
+sudo mkdir -p /var/lib/jenkins/.kube
+sudo cp -R /home/ec2-user/.kube/config /var/lib/jenkins/.kube/config
+sudo chown -R jenkins:jenkins /var/lib/jenkins/.kube
+
+
+## copies AWS Access and Secret keys to Jenkins directory
+sudo cp -R /home/ec2-user/.aws /var/lib/jenkins/.aws
+sudo chown -R jenkins:jenkins /var/lib/jenkins/.aws
+
+
+## add Jenkins user to Docker group
+sudo usermod -aG docker jenkins
+ sudo systemctl restart jenkins
+
+
+## Complete the basic setup of jenkins
+
+Manage Jenkins --> Plugins --> Available Plugins (install the following plugins)
+--Git Plugin 		(should be installed by default)
+--Pipeline Plugin 	(should be installed by default)
+--Docker Pipeline Plugin
+--Kubernetes CLI Plugin
+
+## Add Docker Hub Credentials
+ID - dockerhub
+
+## Configure GitHub Webhook
+payload url : http://<your-jenkins-url>/github-webhook/
+Content Type : application/json
+SSL Verification : Disable
+Just the push event
+
+## Create a Jenkins Pipeline Job
+New Item > Pipeline > OK.
+Name the job - frontend-App
+
+## General Section
+-GitHub Project
+   Check the GitHub project box.
+   Add the repository URL of fe-app, e.g., https://github.com/<your-username>/repo1
+
+## Build Triggers
+-GitHub hook trigger for GITScm polling
+
+
+In the Pipeline section, select Pipeline script and paste the following script:
+
+------------------------------------------------------------------------------------------------------------
+
+pipeline {
+    agent any
+
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
+        DOCKER_IMAGE = 'alamshkh/fe'
+        KUBERNETES_DEPLOYMENT = 'frontend'
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git branch: 'main', url: 'https://github.com/alamshkh/fe.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Generate a dynamic tag based on build number or timestamp
+                    env.TAG = "${env.BUILD_NUMBER}" // Or use: `sh('date +%Y%m%d%H%M%S').trim()`
+                    
+                    // Build the Docker image with the dynamic tag
+                    sh "docker build -t $DOCKER_IMAGE:$TAG ."
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    // Push the Docker image with the dynamic tag
+                    withDockerRegistry([credentialsId: 'dockerhub', url: 'https://index.docker.io/v1/']) {
+                        sh "docker push $DOCKER_IMAGE:$TAG"
+                    }
+                }
+            }
+        }
+
+        stage('Rolling Update Kubernetes Deployment') {
+            steps {
+                script {
+                    // Update the Kubernetes deployment with the new image
+                    sh "kubectl set image deployment/$KUBERNETES_DEPLOYMENT frontend=$DOCKER_IMAGE:$TAG"
+                }
+            }
+        }
+    }
+}
+
+
+
+------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+# Generate a tag using timestamp
+TAG=$(date +%Y%m%d%H%M%S)
+echo "Generated tag: $TAG"
+
+# Or generate a tag using Git commit hash
+TAG=$(git rev-parse --short HEAD)
+echo "Generated tag: $TAG"

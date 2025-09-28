@@ -1,0 +1,49 @@
+###  Installing Ingress Controller
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.4/deploy/static/provider/cloud/deploy.yaml
+
+
+###  Check if the Ingress Controller pods are running and the service has an external IP:
+kubectl get pods -n ingress-nginx
+kubectl get svc -n ingress-nginx
+
+
+###  ssh to the server with the ingress-controller pod and configure nginx reverse proxy
+sudo apt install nginx -y                ## use sudo apt purge nginx -y for uninstall
+sudo systemctl enable --now nginx  ## No Need; Redhat bases OS like ubntu service will automaticallly start 
+sudo nano /etc/nginx/sites-available/default
+
+---------------------------------
+server { 
+    listen 80;
+    server_name www.bluevault.live;    ## your domain name 
+
+    location / {
+        proxy_pass http://localhost:32569;  # change according to ingress controller 
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+---------------------------------
+sudo nginx -t
+sudo systemctl restart nginx
+sudo systemctl status nginx
+
+###  Apply ingress configuration after setup ingress on  node on which ingress is configure
+kubectl apply -f ingress/bluevault-ingress.yaml
+kubectl get ingress
+kubectl get svc -n ingress-nginx
+
+###  Launch the pods
+kubectl apply -f home/fe.yml
+
+kubectl apply -f emi/fe.yml
+kubectl apply -f emi/be.yml
+
+kubectl apply -f loan/fe.yml
+kubectl apply -f loan/be.yml
+kubectl apply -f loan/mysql.yml
+
+kubectl apply -f sip/fe.yml
+kubectl apply -f sip/be.yml
+
+
